@@ -1,26 +1,35 @@
-class Strategy:
+from typing import Type
+from abc import ABC, abstractmethod
+from Prisoners_Dilemma.utils import random_choice
+from Prisoners_Dilemma.utils import Action
+
+C, D = Action.C, Action.D
+
+
+class Strategy(ABC):
     def __init__(self, name):
         self.name = name
         self.history = []
 
-    def choose_action(self, opponent_history):
+    @abstractmethod
+    def choose_action(self, opponent_history) -> Action:
         pass
 
 
 class AlwaysCooperate(Strategy):
     def choose_action(self, opponent_history):
-        return 'C'
+        return C
 
 
 class AlwaysDefect(Strategy):
     def choose_action(self, opponent_history):
-        return 'D'
+        return D
 
 
 class TitForTat(Strategy):
     def choose_action(self, opponent_history):
         if not opponent_history:
-            return 'C'
+            return C
         return opponent_history[-1]
 
 
@@ -37,5 +46,5 @@ class Grofman(Strategy):
 
     def choose_action(self, opponent_history):
         if not opponent_history or self.history[-1] == opponent_history[-1]:
-            return 'C'
+            return C
         return random_choice(2 / 7)
