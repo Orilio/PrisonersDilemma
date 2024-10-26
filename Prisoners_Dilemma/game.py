@@ -4,23 +4,36 @@ from itertools import combinations
 from Prisoners_Dilemma.strategies import Strategy
 from Prisoners_Dilemma.utils import Action
 from Prisoners_Dilemma.utils import SCORE
+from collections.abc import Iterator
 
 
 C, D = Action.C, Action.D
+
+
+def rr_tournament_pairings(strategies) -> Iterator[tuple[Type[Strategy], Type[Strategy]]]:
+    """
+    Generator for match pairings in a round robin tournament.
+    """
+    for i, s1 in enumerate(strategies):
+        for s2 in strategies[i:]:
+            yield (s1, s2)
 
 
 class Tournament:
     def __init__(self, strategies: list[Type[Strategy]], turns):
         self.strategies = strategies
         self.turns = turns
-        self.graph = nx.DiGraph()
+        self.graph = nx.Graph()
         self.graph.add_nodes_from(self.strategies)
 
-    def run(self):
-        for (u, v) in combinations(self.strategies, 2):
-            print(f'u: {u},\t v: {v}')
-            p1 = u()
-            p2 = v()
+    def play(self):
+        # for (u, v) in combinations(self.strategies, 2):
+        #     print(f'u: {u},\t v: {v}')
+        #     p1 = u()
+        #     p2 = v()
+        for s1, s2 in rr_tournament_pairings(self.strategies):
+            match = Match(s1, s2, self.turns)
+            match.play()
 
 
 class Match:
