@@ -33,3 +33,9 @@ SCORE = np.array([[r, s], [t, p]])
 
 def random_choice(p: float = 0.5) -> Action:
     return C if random.random() < p else D
+
+def interaction_score(pair: tuple[Action, Action]):
+    a1, a2 = (a.value for a in pair)
+    return (SCORE[a1][a2], SCORE[a2][a1])
+
+ 
