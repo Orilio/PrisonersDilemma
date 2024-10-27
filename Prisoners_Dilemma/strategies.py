@@ -16,6 +16,11 @@ class Strategy(ABC):
         pass
 
 
+class Random(Strategy):
+    def choose_action(self, opponent_history):
+        return random_choice()
+
+
 class AlwaysCooperate(Strategy):
     def choose_action(self, opponent_history):
         return C
@@ -48,3 +53,16 @@ class Grofman(Strategy):
         if not opponent_history or self.history[-1] == opponent_history[-1]:
             return C
         return random_choice(2 / 7)
+
+
+class Joss(Strategy):
+    '''
+    Submitted by Johann Joss.
+
+    description:
+    > "This rule cooperates 90% of the time after a cooperation by the other.
+    > It always defects after a defection by the other."
+    '''
+    
+    def choose_action(self, opponent_history):
+        if opponent_history[-1]

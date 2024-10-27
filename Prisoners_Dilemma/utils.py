@@ -8,6 +8,7 @@ class Action(Enum):
     C = 0
     D = 1
 
+
 C, D = Action.C, Action.D
 
 # class Score():
@@ -34,8 +35,12 @@ SCORE = np.array([[r, s], [t, p]])
 def random_choice(p: float = 0.5) -> Action:
     return C if random.random() < p else D
 
+
 def interaction_score(pair: tuple[Action, Action]):
     a1, a2 = (a.value for a in pair)
     return (SCORE[a1][a2], SCORE[a2][a1])
 
- 
+
+def match_score(match_history: list[tuple]):
+    scores = [interaction_score(pair) for pair in match_history]
+    return tuple(sum(player_score) for player_score in zip(*scores))

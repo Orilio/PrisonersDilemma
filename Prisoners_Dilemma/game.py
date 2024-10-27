@@ -1,10 +1,10 @@
 from typing import Type
 import networkx as nx
-from itertools import combinations
 from Prisoners_Dilemma.strategies import Strategy
-from Prisoners_Dilemma.utils import Action, SCORE, interaction_score
+from Prisoners_Dilemma.utils import Action, SCORE, match_score
 from collections.abc import Iterator
 from joblib import Parallel, delayed
+import pandas as pd
 
 
 C, D = Action.C, Action.D
@@ -31,6 +31,7 @@ class Tournament:
         match = Match(s1, s2, self.turns)
         self.graph.add_edge(s1, s2, match=match)
         match.play()
+        match.score = match_score(match.history)
 
     def play(self):
         for s1, s2 in rr_tournament_pairings(self.strategies):
@@ -41,8 +42,14 @@ class Tournament:
             print(f's1: {s1},\t s2: {s2}')
             self.match_up(s1, s2)
 
-    def calculate_scores(self):
-        for 
+    def show_scores(self):
+        adj = nx.adjacency_data(self.graph)['adjacency']
+        scores = [[match['match'].score for match in group]for group in adj]
+        strategy_names = [s.__name__ for s in self.strategies]
+        score_matrix = pd.DataFrame(
+            scores, index=strategy_names, columns=strategy_names)
+        return score_matrix
+
 
 class Match:
     def __init__(self, s1: Type[Strategy], s2: Type[Strategy], turns):
@@ -50,6 +57,7 @@ class Match:
         self.p2 = s2(s2.__name__)
         self.turns = turns
         self.history = []
+        self.score = tuple()
 
     def play(self):
         for _ in range(self.turns):
@@ -76,7 +84,3 @@ class Match:
         for t, (t1, t2) in enumerate(self.history):
             s += f'{t+1}:\t{t1.name} {t2.name}\n'
         return s
-
-    def get_score(self):
-        scores = [interaction_score(pair) for pair in self.history]
-        return tuple(sum(player_score) for player_score in zip(*scores))
