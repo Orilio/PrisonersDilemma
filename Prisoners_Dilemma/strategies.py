@@ -101,6 +101,7 @@ class Grofman(Strategy):
     Submitted by Bernard Grofman.
 
     description:
+
     > "If the players did different things on the previous move, this rule
     > cooperates with probability 2/7. Otherwise this rule always cooperates."
 
@@ -118,6 +119,7 @@ class Shubik(Strategy):
     Submitted by Martin Shubik.
 
     description:
+
     > "This rule cooperates until the other defects, and then defects
     > once. If the other defects again after the rule's cooperation is
     > resumed, the rule defects twice. In general, the length of
@@ -163,19 +165,19 @@ class Shubik(Strategy):
 class SteinAndRapoport(Strategy):
     pass
 
-# ------------------------------------------------------------------------
-
 
 class Friedman(Strategy):
     '''
     Submitted by James W. Friedman.
+    (aka Grudger)
 
     description:
+
     > "This rule cooperates until the other player defects, and then
     > defects until the end of the game. This strategy was described in
     > the context of the Prisoner's Dilemma by Harris (1969). Its 
     > properties in a broader class of games have been developed by
-    > Friedman (1971)"
+    > Friedman (1971)."
 
     This strategy came 7th in Axelrod's original tournament.
     '''
@@ -194,7 +196,33 @@ class Friedman(Strategy):
 
 
 class Davis(Strategy):
-    pass
+    '''
+    Submitted by Morton Davis.
+
+    description:
+
+    > "This rule cooperates on the first ten moves, and then if there is
+    > a defection it defects until the end of the game."
+
+    This strategy came 8th in Axelrod's original tournament.
+    '''
+
+    def __init__(self, name):
+        super().__init__(name)
+        self.beginning_moves_left = 10
+        self.is_retaliating = False
+
+    def choose_action(self, opponent_history) -> Action:
+        if self.beginning_moves_left > 0:
+            self.beginning_moves_left -= 1
+            return C
+
+        if self.is_retaliating:
+            return D
+        if self.history and opponent_history[-1] == D:
+            self.is_retaliating = True
+            return D
+        return C
 
 
 class Graaskamp(Strategy):
@@ -214,6 +242,7 @@ class Joss(Strategy):
     Submitted by Johann Joss.
 
     description:
+
     > "This rule cooperates 90% of the time after a cooperation by the other.
     > It always defects after a defection by the other."
     '''
