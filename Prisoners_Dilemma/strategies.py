@@ -42,8 +42,6 @@ class TidemanAndChieruzzi(Strategy):
     pass
 
 
-
-
 class Nydegger(Strategy):
     '''
     Submitted by Rudy Nydegger.
@@ -115,7 +113,6 @@ class Grofman(Strategy):
         return random_choice(2 / 7)
 
 
-# ------------------------------------------------------------------------
 class Shubik(Strategy):
     '''
     Submitted by Martin Shubik.
@@ -127,12 +124,12 @@ class Shubik(Strategy):
     > retaliation is increased by one for each departure from mutual
     > cooperation. This rule is described with its strategic implications
     > in Shubik (1970). Further treatment of its is given in Taylor (1976)."
-    
-    
+
+
     > Note that this rule's retaliation streak is re-activated and its
     > retaliation length is raised only when the opponent defects on
     > this rule's cooperation.
-    
+
     > This means that the rule is indifferent to
     > opponent moves while on a retaliatory streak. 
 
@@ -166,9 +163,34 @@ class Shubik(Strategy):
 class SteinAndRapoport(Strategy):
     pass
 
+# ------------------------------------------------------------------------
+
 
 class Friedman(Strategy):
-    pass
+    '''
+    Submitted by James W. Friedman.
+
+    description:
+    > "This rule cooperates until the other player defects, and then
+    > defects until the end of the game. This strategy was described in
+    > the context of the Prisoner's Dilemma by Harris (1969). Its 
+    > properties in a broader class of games have been developed by
+    > Friedman (1971)"
+
+    This strategy came 7th in Axelrod's original tournament.
+    '''
+
+    def __init__(self, name):
+        super().__init__(name)
+        self.is_retaliating = False
+
+    def choose_action(self, opponent_history) -> Action:
+        if self.is_retaliating:
+            return D
+        if self.history and opponent_history[-1] == D:
+            self.is_retaliating = True
+            return D
+        return C
 
 
 class Davis(Strategy):
