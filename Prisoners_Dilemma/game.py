@@ -41,6 +41,8 @@ class Tournament:
             print(f's1: {s1},\t s2: {s2}')
             self.match_up(s1, s2)
 
+    def calculate_scores(self):
+        for 
 
 class Match:
     def __init__(self, s1: Type[Strategy], s2: Type[Strategy], turns):
