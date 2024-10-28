@@ -37,9 +37,40 @@ class TitForTat(Strategy):
             return C
         return opponent_history[-1]
 
+# ------------------------------------------------------------------------
+
 
 class TidemanAndChieruzzi(Strategy):
-    pass
+    '''
+    Submitted by Nicolas Tideman and Paula Chieruzzi.
+
+    description:
+
+    > "This rule begins with cooperation and tit for tat. However, when
+    > the other player finishes his second run of defections, an extra
+    > punishment is instituted, and the number of punishing defections
+    > is increased by one with each run of the other's defections.
+    > The other player is given a fresh start if he is 10 or more points
+    > behind, if he has not just started a run of defections, if it has
+    > been at least 20 moves since a fresh start, if there are at
+    > least 10 moves remaining, and if the number of defections differs
+    > from a 50-50 random generator by at least 3.0 standard deviations.
+    > A fresh start involves two cooperations and then play as if
+    > the game had just started. The program defects automatically
+    > on the last two moves."
+
+    This strategy came 2nd in Axelrod's original tournament.
+    '''
+
+    def __init__(self, name):
+        super().__init__(name)
+        self.is_fresh_start = True
+        self.rounds_since_fresh_start = 0
+        self.rounds_remaining = 200
+        self.number_of_opponent_defections = 0
+        
+    def choose_action(self, opponent_history) -> Action:
+        if self.rounds_remaining <=
 
 
 class Nydegger(Strategy):
@@ -226,7 +257,161 @@ class Davis(Strategy):
 
 
 class Graaskamp(Strategy):
-    pass
+    '''
+    Submitted by James Graaskamp.
+
+    description:
+
+    > "This rule plays tit for tat for 50 moves, defects on move 51, and
+    > then plays 5 more moves of tit for tat. A check is then made to
+    > see if the player seems to be RANDOM, in which case it defects
+    > from then on. A check is also made to see if the other is TIT
+    > FOR TAT, ANALOGY (a program from the preliminary tournament),
+    > and its own twin, in which case it plays tit for tat. Otherwise
+    > it randomnly defects every 5 to 15 moves, hoping that enough trust
+    > has been built up so that the other player will not notice
+    > these defections."
+
+    This strategy came 9th in Axelrod's original tournament.
+    '''
+
+
+'''
+    # Initialize move history
+    my_moves = []
+    opponent_moves = []
+
+    # Initialize flags and counters
+    is_random = False
+    identified_opponent_type = False
+    defection_interval = random.randint(5, 15)  # Random interval for defection between 5 and 15 moves
+
+    # Main function for each round
+    def graaskamp_strategy(round_num, opponent_move):
+        global is_random, identified_opponent_type, defection_interval
+        
+        # Update history
+        if round_num > 0:
+            my_moves.append(last_move)
+            opponent_moves.append(opponent_move)
+        
+        # Initial Tit-for-Tat for the first 50 moves
+        if round_num == 0:
+            last_move = "cooperate"
+            return last_move
+        
+        if round_num <= 50:
+            last_move = opponent_moves[-1]  # Tit-for-Tat (mimic opponent's last move)
+            return last_move
+        
+        # Move 51: Test Defection
+        if round_num == 51:
+            last_move = "defect"
+            return last_move
+        
+        # Moves 52-56: Return to Tit-for-Tat after defection test
+        if round_num <= 56:
+            last_move = opponent_moves[-1]  # Tit-for-Tat
+            return last_move
+        
+        # Detect opponent type after 56 moves
+        if not identified_opponent_type:
+            # Detect if opponent is RANDOM or a known type (Tit-for-Tat, Analogy, or Graaskamp's Twin)
+            if detect_random_behavior(opponent_moves):  # Define a function to detect randomness
+                is_random = True
+                identified_opponent_type = True
+            elif detect_known_type(opponent_moves):  # Define a function to detect known types
+                identified_opponent_type = True
+        
+        # If opponent is detected as random, defect continuously
+        if is_random:
+            last_move = "defect"
+            return last_move
+        
+        # If opponent is identified as known type, continue Tit-for-Tat
+        if identified_opponent_type:
+            last_move = opponent_moves[-1]
+            return last_move
+        
+        # If opponent type is neither random nor known, defect randomly every 5-15 moves
+        if round_num % defection_interval == 0:
+            last_move = "defect"
+            defection_interval = random.randint(5, 15)  # Recalculate the interval for next random defection
+        else:
+            last_move = opponent_moves[-1]  # Otherwise, play Tit-for-Tat
+        
+        return last_move
+
+    # Helper function to detect if opponent is RANDOM (dummy example function)
+    def detect_random_behavior(opponent_moves):
+        # Implement statistical test for randomness, e.g., calculate variance in opponent's moves
+        pass
+    
+    import numpy as np
+    from scipy.stats import chi2
+
+    def detect_random_behavior(opponent_moves):
+        """
+        Detects if the opponent's moves are random based on variance, autocorrelation, and runs test.
+        
+        Parameters:
+            opponent_moves (list of str): List of opponent's moves where 'cooperate' is represented by 1 and 'defect' by 0.
+
+        Returns:
+            bool: True if opponent behavior is detected as random, False otherwise.
+        """
+        # Convert moves to numeric form: 'cooperate' = 1, 'defect' = 0
+        moves = [1 if move == "cooperate" else 0 for move in opponent_moves]
+        
+        # Check if we have enough moves to analyze
+        if len(moves) < 10:
+            return False  # Not enough data to make a determination
+
+        # 1. Variance Check
+        move_variance = np.var(moves)
+        if 0.2 < move_variance < 0.8:
+            # Variance in a random binary sequence is typically around 0.25 (for equal 1s and 0s).
+            variance_check = True
+        else:
+            variance_check = False
+
+        # 2. Autocorrelation Check (Lag-1)
+        mean_moves = np.mean(moves)
+        autocorrelation = np.corrcoef(moves[:-1], moves[1:])[0, 1] if len(moves) > 1 else 0
+        if abs(autocorrelation) < 0.1:
+            autocorrelation_check = True
+        else:
+            autocorrelation_check = False
+
+        # 3. Runs Test
+        # Count runs in the sequence
+        runs = 1  # Start with 1 run
+        for i in range(1, len(moves)):
+            if moves[i] != moves[i - 1]:
+                runs += 1
+
+        n1 = sum(moves)  # Count of cooperate moves
+        n2 = len(moves) - n1  # Count of defect moves
+        expected_runs = (2 * n1 * n2) / (n1 + n2) + 1
+        variance_runs = (2 * n1 * n2 * (2 * n1 * n2 - n1 - n2)) / ((n1 + n2) ** 2 * (n1 + n2 - 1))
+        z_score = (runs - expected_runs) / np.sqrt(variance_runs) if variance_runs != 0 else 0
+
+        # The 95% confidence interval for a standard normal distribution is roughly [-1.96, 1.96]
+        if abs(z_score) < 1.96:
+            runs_test_check = True
+        else:
+            runs_test_check = False
+
+        # If all tests suggest randomness, we classify the behavior as random
+        return variance_check and autocorrelation_check and runs_test_check
+
+
+    # Helper function to detect if opponent is a known type
+    def detect_known_type(opponent_moves):
+        # Implement checks for specific patterns for known types like Tit-for-Tat, Analogy, or Graaskamp's Twin
+        pass
+
+'''
 
 
 class Downing(Strategy):
